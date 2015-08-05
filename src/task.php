@@ -11,19 +11,19 @@
       $this->description = (string) $new_description;
     }
 
-    function getDescription(){
+    function getDescription() {
       return $this->description;
     }
 
-    function save() {
+    function save() {  //saving list to cookie
       array_push($_SESSION['list_of_tasks'], $this);
     }
 
-    static function getAll(){
+    static function getAll() {  //getting list of
       return $_SESSION['list_of_tasks'];
     }
 
-    static function deleteAll(){
+    static function deleteAll() {
       $_SESSION['list_of_tasks'] = array();
     }
 
