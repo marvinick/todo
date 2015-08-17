@@ -11,6 +11,15 @@
 class Twig_Tests_TemplateTest extends PHPUnit_Framework_TestCase
 {
     /**
+     * @expectedException LogicException
+     */
+    public function testDisplayBlocksAcceptTemplateOnlyAsBlocks()
+    {
+        $template = $this->getMockForAbstractClass('Twig_Template', array(), '', false);
+        $template->displayBlock('foo', array(), array('foo' => array(new stdClass(), 'foo')));
+    }
+
+    /**
      * @dataProvider getAttributeExceptions
      */
     public function testGetAttributeExceptions($template, $message, $useExt)
@@ -60,7 +69,7 @@ class Twig_Tests_TemplateTest extends PHPUnit_Framework_TestCase
             array('{{ array.a }}', 'Key "a" for array with keys "foo" does not exist in "%s" at line 1', false),
             array('{{ attribute(array, -10) }}', 'Key "-10" for array with keys "foo" does not exist in "%s" at line 1', false),
             array('{{ array_access.a }}', 'Method "a" for object "Twig_TemplateArrayAccessObject" does not exist in "%s" at line 1', false),
-            array('{% macro foo(obj) %}{{ obj.missing_method() }}{% endmacro %}{{ _self.foo(array_access) }}', 'Method "missing_method" for object "Twig_TemplateArrayAccessObject" does not exist in "%s" at line 1', false),
+            array('{% from _self import foo %}{% macro foo(obj) %}{{ obj.missing_method() }}{% endmacro %}{{ foo(array_access) }}', 'Method "missing_method" for object "Twig_TemplateArrayAccessObject" does not exist in "%s" at line 1', false),
             array('{{ magic_exception.test }}', 'An exception has been thrown during the rendering of a template ("Hey! Don\'t try to isset me!") in "%s" at line 1.', false),
             array('{{ object["a"] }}', 'Impossible to access a key "a" on an object of class "stdClass" that does not implement ArrayAccess interface in "%s" at line 1', false),
         );
@@ -138,6 +147,11 @@ class Twig_Tests_TemplateTest extends PHPUnit_Framework_TestCase
 
         $this->assertNotInstanceof('Twig_Markup', $template->getAttribute($template1, 'empty'));
         $this->assertSame('', $template->getAttribute($template1, 'empty'));
+
+        $this->assertFalse($template->getAttribute($template1, 'env', array(), Twig_Template::ANY_CALL, true));
+        $this->assertFalse($template->getAttribute($template1, 'environment', array(), Twig_Template::ANY_CALL, true));
+        $this->assertFalse($template->getAttribute($template1, 'getEnvironment', array(), Twig_Template::METHOD_CALL, true));
+        $this->assertFalse($template->getAttribute($template1, 'displayWithErrorHandling', array(), Twig_Template::METHOD_CALL, true));
     }
 
     public function getGetAttributeWithTemplateAsObject()
